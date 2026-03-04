@@ -1,6 +1,13 @@
+const rateLimit = require('./_ratelimit')
+
 exports.handler = async (event) => {
   if (event.httpMethod !== 'DELETE') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) }
+  }
+
+  const ip = event.headers['x-forwarded-for']?.split(',')[0].trim() || 'unknown'
+  if (!rateLimit(ip, { max: 30, windowMs: 60_000 })) {
+    return { statusCode: 429, body: JSON.stringify({ error: 'Too many requests' }) }
   }
 
   let body
