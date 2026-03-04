@@ -446,6 +446,10 @@ document.addEventListener('touchstart', e => {
   const main    = document.getElementById('main')
   if (!nav) return
 
+  // On mobile, only the active panel should be visible.
+  // panel-hidden has no effect on desktop (rule is inside the media query).
+  main.classList.add('panel-hidden')
+
   nav.querySelectorAll('.mobile-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       nav.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'))
