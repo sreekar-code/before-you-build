@@ -214,6 +214,7 @@ function initCanvas() {
   new ResizeObserver(() => { resize(); renderMatrix() }).observe(canvas.parentElement)
   canvas.addEventListener('mousemove', onMove)
   canvas.addEventListener('mouseleave', onLeave)
+  canvas.addEventListener('touchstart', onTouch, { passive: true })
 }
 
 function resize() {
@@ -381,6 +382,25 @@ function onLeave() {
   hideTip(); renderMatrix()
 }
 
+function onTouch(e) {
+  const touch = e.touches[0]
+  const r  = canvas.getBoundingClientRect()
+  const tx = touch.clientX - r.left
+  const ty = touch.clientY - r.top
+  let found = null
+
+  for (const idea of ideas) {
+    const dx = px(idea.effort) - tx, dy = py(idea.impact) - ty
+    if (Math.hypot(dx, dy) <= HR + 14) { found = idea; break }
+  }
+
+  if (found !== hovered) {
+    hovered = found
+    renderMatrix()
+  }
+  found ? showTip(touch.clientX, touch.clientY, found) : hideTip()
+}
+
 function showTip(mx, my, idea) {
   const q = quad(idea.effort, idea.impact)
   document.getElementById('tt-name').textContent   = idea.name
@@ -399,6 +419,25 @@ function showTip(mx, my, idea) {
 }
 
 function hideTip() { tooltip.classList.remove('show') }
+
+// ── MOBILE TABS ────────────────────────────────────────────────
+;(function () {
+  const nav     = document.getElementById('mobile-nav')
+  const sidebar = document.getElementById('sidebar')
+  const main    = document.getElementById('main')
+  if (!nav) return
+
+  nav.querySelectorAll('.mobile-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      nav.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'))
+      tab.classList.add('active')
+      const panel = tab.dataset.panel
+      sidebar.classList.toggle('panel-hidden', panel !== 'sidebar')
+      main.classList.toggle('panel-hidden', panel !== 'main')
+      if (panel === 'main') { resize(); renderMatrix() }
+    })
+  })
+})()
 
 // ── HELPERS ────────────────────────────────────────────────────
 function setLoading(on) { document.getElementById('loading-ideas').style.display = on ? 'flex' : 'none' }

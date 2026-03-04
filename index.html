@@ -50,6 +50,11 @@
 
 <!-- ── APP ──────────────────────────────────────────────────── -->
 <div id="app" class="hidden">
+  <nav id="mobile-nav">
+    <button class="mobile-tab active" data-panel="sidebar">+ add / list</button>
+    <button class="mobile-tab" data-panel="main">matrix</button>
+  </nav>
+
   <aside id="sidebar">
 
     <div class="brand">
@@ -111,7 +116,6 @@
 
   <main id="main">
     <div class="main-header">
-      <span class="main-title">The Matrix</span>
       <button class="export-btn" id="export-btn">↓ export json</button>
     </div>
 

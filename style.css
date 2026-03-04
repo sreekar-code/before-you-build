@@ -467,14 +467,6 @@ input[type="range"]::-moz-range-thumb {
   flex-shrink: 0;
 }
 
-.main-title {
-  font-family: var(--f-display);
-  font-size: 18px;
-  font-weight: 400;
-  font-style: italic;
-  color: var(--text-2);
-  letter-spacing: -0.01em;
-}
 
 .export-btn {
   font-family: var(--f-mono);
@@ -571,4 +563,114 @@ input[type="range"]::-moz-range-thumb {
   padding-top: 10px;
   border-top: 1px solid var(--border);
   line-height: 1.6;
+}
+
+/* ── MOBILE NAV ─────────────────────────────────────────────── */
+#mobile-nav { display: none; }
+
+@media (max-width: 700px) {
+  html, body { overflow: hidden; }
+
+  #app {
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  /* Tab bar */
+  #mobile-nav {
+    display: flex;
+    order: -1;
+    height: 48px;
+    min-height: 48px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-2);
+    flex-shrink: 0;
+  }
+
+  .mobile-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-3);
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-tab.active {
+    color: var(--accent);
+    background: var(--accent-2);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  /* Panels */
+  #sidebar {
+    width: 100%;
+    min-width: 0;
+    border-right: none;
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  #sidebar.panel-hidden,
+  #main.panel-hidden { display: none; }
+
+  #main {
+    flex: 1;
+    padding: 14px 16px;
+    gap: 10px;
+  }
+
+  /* Prevent iOS auto-zoom on inputs (needs ≥16px) */
+  .f-input,
+  #username-input { font-size: 16px; }
+
+  textarea.f-input { min-height: 72px; }
+
+  /* Larger slider thumbs for touch */
+  input[type="range"] { height: 22px; cursor: pointer; }
+
+  input[type="range"]::-webkit-slider-thumb {
+    width: 24px;
+    height: 24px;
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+  }
+
+  /* Larger delete button tap target */
+  .del-btn {
+    top: 6px;
+    right: 4px;
+    font-size: 18px;
+    padding: 6px 10px;
+  }
+
+  .card-name { padding-right: 28px; }
+
+  /* Submit + name screen button */
+  .submit-btn { padding: 13px; }
+
+  #name-submit-btn { padding: 0 18px; min-height: 48px; }
+
+  #username-input { padding: 14px 16px; }
+
+  /* Name screen */
+  .name-wrap h1 { font-size: 40px; }
+
+  /* Legend compact */
+  .legend { gap: 4px 10px; }
+  .legend-item { font-size: 9px; }
+
+  /* Tooltip — widen on mobile */
+  #tooltip { max-width: min(280px, calc(100vw - 24px)); }
+
+  /* Main header */
+  .export-btn { font-size: 9px; padding: 6px 10px; }
 }
