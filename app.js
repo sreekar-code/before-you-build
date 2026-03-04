@@ -145,7 +145,9 @@ document.getElementById('add-form').addEventListener('submit', async e => {
     document.getElementById('idea-notes').value = ''
     effortSlider.value = 0; document.getElementById('effort-val').textContent = '0'
     impactSlider.value = 0; document.getElementById('impact-val').textContent = '0'
-    document.getElementById('idea-name').focus()
+    // Dismiss mobile keyboard; re-focus only on non-touch devices
+    if (document.activeElement) document.activeElement.blur()
+    if (!('ontouchstart' in window)) document.getElementById('idea-name').focus()
     ideas.unshift(newIdea)
     saveCache()
     renderList(); renderMatrix()
@@ -205,7 +207,13 @@ const canvas  = document.getElementById('matrix-canvas')
 const ctx     = canvas.getContext('2d')
 const tooltip = document.getElementById('tooltip')
 
-const PAD = { top: 32, right: 32, bottom: 60, left: 52 }
+// Responsive padding — tighter on small canvases
+const PAD = {
+  get top()    { return cw() < 420 ? 20 : 32 },
+  get right()  { return cw() < 420 ? 14 : 32 },
+  get bottom() { return cw() < 420 ? 40 : 60 },
+  get left()   { return cw() < 420 ? 34 : 52 },
+}
 const DR  = 6  // dot radius
 const HR  = 9  // hover radius
 
@@ -349,11 +357,14 @@ function renderMatrix() {
       ctx.strokeStyle = q.color + '66'; ctx.lineWidth = 2; ctx.stroke()
     }
 
-    const label = idea.name.length > 22 ? idea.name.slice(0, 21) + '…' : idea.name
-    ctx.font      = `${ho ? 500 : 400} 11px Space Grotesk, system-ui, sans-serif`
-    ctx.fillStyle = ho ? 'rgba(226,219,208,0.95)' : 'rgba(226,219,208,0.45)'
-    ctx.textAlign = 'left'; ctx.textBaseline = 'middle'
-    ctx.fillText(label, x + r + 6, y)
+    // Hide labels on narrow canvas — tap shows the tooltip instead
+    if (cw() >= 420) {
+      const label = idea.name.length > 22 ? idea.name.slice(0, 21) + '…' : idea.name
+      ctx.font      = `${ho ? 500 : 400} 11px Space Grotesk, system-ui, sans-serif`
+      ctx.fillStyle = ho ? 'rgba(226,219,208,0.95)' : 'rgba(226,219,208,0.45)'
+      ctx.textAlign = 'left'; ctx.textBaseline = 'middle'
+      ctx.fillText(label, x + r + 6, y)
+    }
   })
 }
 
@@ -391,14 +402,15 @@ function onTouch(e) {
 
   for (const idea of ideas) {
     const dx = px(idea.effort) - tx, dy = py(idea.impact) - ty
-    if (Math.hypot(dx, dy) <= HR + 14) { found = idea; break }
+    if (Math.hypot(dx, dy) <= HR + 16) { found = idea; break }
   }
 
   if (found !== hovered) {
     hovered = found
     renderMatrix()
   }
-  found ? showTip(touch.clientX, touch.clientY, found) : hideTip()
+  // Show tooltip above the touch point so the finger doesn't cover it
+  found ? showTip(touch.clientX, touch.clientY - 60, found) : hideTip()
 }
 
 function showTip(mx, my, idea) {
@@ -419,6 +431,13 @@ function showTip(mx, my, idea) {
 }
 
 function hideTip() { tooltip.classList.remove('show') }
+
+// Tap outside canvas dismisses tooltip on mobile
+document.addEventListener('touchstart', e => {
+  if (!canvas.contains(e.target) && hovered) {
+    hovered = null; hideTip(); renderMatrix()
+  }
+}, { passive: true })
 
 // ── MOBILE TABS ────────────────────────────────────────────────
 ;(function () {

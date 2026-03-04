@@ -467,6 +467,14 @@ input[type="range"]::-moz-range-thumb {
   flex-shrink: 0;
 }
 
+.main-title {
+  font-family: var(--f-display);
+  font-size: 18px;
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-2);
+  letter-spacing: -0.01em;
+}
 
 .export-btn {
   font-family: var(--f-mono);
@@ -629,7 +637,11 @@ input[type="range"]::-moz-range-thumb {
   .f-input,
   #username-input { font-size: 16px; }
 
-  textarea.f-input { min-height: 72px; }
+  textarea.f-input { min-height: 72px; resize: none; }
+
+  /* Tighter form + list padding on mobile */
+  #add-form { padding: 16px 16px 18px; }
+  #ideas-section { padding: 14px 16px 20px; }
 
   /* Larger slider thumbs for touch */
   input[type="range"] { height: 22px; cursor: pointer; }
@@ -671,6 +683,10 @@ input[type="range"]::-moz-range-thumb {
   /* Tooltip — widen on mobile */
   #tooltip { max-width: min(280px, calc(100vw - 24px)); }
 
+  /* Prevent double-tap zoom on canvas, allow touch events */
+  #matrix-canvas { touch-action: manipulation; }
+
   /* Main header */
+  .main-title { font-size: 15px; }
   .export-btn { font-size: 9px; padding: 6px 10px; }
 }
