@@ -58,14 +58,26 @@ document.getElementById('change-name-btn').addEventListener('click', () => {
 const saved = localStorage.getItem('idea-matrix-username')
 if (saved) showApp(saved); else showNameScreen()
 
+// ── CACHE ──────────────────────────────────────────────────────
+function cacheKey() { return `idea-matrix-ideas-${currentUser}` }
+function saveCache() { localStorage.setItem(cacheKey(), JSON.stringify(ideas)) }
+function loadCache() {
+  try { return JSON.parse(localStorage.getItem(cacheKey())) || null } catch { return null }
+}
+
 // ── API ────────────────────────────────────────────────────────
 async function loadIdeas() {
-  setLoading(true); setErr('list', '')
+  setErr('list', '')
+  const cached = loadCache()
+  if (cached) { ideas = cached; renderList(); renderMatrix() }
+  else setLoading(true)
+
   try {
     const res = await fetch(`/.netlify/functions/get-ideas?username=${encodeURIComponent(currentUser)}`)
     const data = await res.json()
     if (!res.ok) { setErr('list', 'Load failed: ' + (data.error || res.status)); setLoading(false); return }
     ideas = data || []
+    saveCache()
   } catch (e) {
     setErr('list', 'Load failed: ' + e.message); setLoading(false); return
   }
@@ -80,13 +92,11 @@ async function insertIdea(payload) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     })
-    if (!res.ok) {
-      const data = await res.json()
-      setErr('form', 'Could not add: ' + (data.error || res.status)); return false
-    }
-    return true
+    const data = await res.json()
+    if (!res.ok) { setErr('form', 'Could not add: ' + (data.error || res.status)); return null }
+    return data
   } catch (e) {
-    setErr('form', 'Could not add: ' + e.message); return false
+    setErr('form', 'Could not add: ' + e.message); return null
   }
 }
 
@@ -121,7 +131,7 @@ document.getElementById('add-form').addEventListener('submit', async e => {
   const btn = document.getElementById('add-btn')
   btn.disabled = true; btn.textContent = 'adding…'
 
-  const ok = await insertIdea({
+  const newIdea = await insertIdea({
     username: currentUser,
     name,
     effort: +effortSlider.value,
@@ -130,13 +140,15 @@ document.getElementById('add-form').addEventListener('submit', async e => {
   })
 
   btn.disabled = false; btn.textContent = 'add to matrix'
-  if (ok) {
+  if (newIdea) {
     document.getElementById('idea-name').value  = ''
     document.getElementById('idea-notes').value = ''
     effortSlider.value = 0; document.getElementById('effort-val').textContent = '0'
     impactSlider.value = 0; document.getElementById('impact-val').textContent = '0'
     document.getElementById('idea-name').focus()
-    await loadIdeas()
+    ideas.unshift(newIdea)
+    saveCache()
+    renderList(); renderMatrix()
   }
 })
 
@@ -169,9 +181,12 @@ function renderList() {
 
   list.querySelectorAll('.del-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
-      btn.disabled = true
-      const ok = await deleteIdea(btn.dataset.id)
-      if (ok) await loadIdeas(); else btn.disabled = false
+      const id = btn.dataset.id
+      const prev = [...ideas]
+      ideas = ideas.filter(i => i.id !== id)
+      saveCache(); renderList(); renderMatrix()
+      const ok = await deleteIdea(id)
+      if (!ok) { ideas = prev; saveCache(); renderList(); renderMatrix() }
     })
   })
 }

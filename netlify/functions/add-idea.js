@@ -34,7 +34,7 @@ exports.handler = async (event) => {
       apikey: SUPABASE_SERVICE_ROLE_KEY,
       Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
       'Content-Type': 'application/json',
-      Prefer: 'return=minimal',
+      Prefer: 'return=representation',
     },
     body: JSON.stringify({
       username: username.trim(),
@@ -50,5 +50,6 @@ exports.handler = async (event) => {
     return { statusCode: res.status, body: JSON.stringify({ error: data }) }
   }
 
-  return { statusCode: 201, body: JSON.stringify({ ok: true }) }
+  const created = await res.json()
+  return { statusCode: 201, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(created[0]) }
 }
