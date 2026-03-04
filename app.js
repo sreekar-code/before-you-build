@@ -1,11 +1,3 @@
-// ── CONFIG ─────────────────────────────────────────────────────
-const SUPABASE_URL      = 'https://oianjnevxsswpneyllod.supabase.co'
-const SUPABASE_ANON_KEY = 'sb_publishable_Fu5sKItajdlPW3PfigUNNA_-ezidGaZ'
-// ──────────────────────────────────────────────────────────────
-
-const { createClient } = supabase
-const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
 // ── STATE ──────────────────────────────────────────────────────
 let currentUser = null
 let ideas       = []
@@ -66,29 +58,53 @@ document.getElementById('change-name-btn').addEventListener('click', () => {
 const saved = localStorage.getItem('idea-matrix-username')
 if (saved) showApp(saved); else showNameScreen()
 
-// ── SUPABASE ───────────────────────────────────────────────────
+// ── API ────────────────────────────────────────────────────────
 async function loadIdeas() {
   setLoading(true); setErr('list', '')
-  const { data, error } = await db
-    .from('ideas').select('*')
-    .eq('username', currentUser)
-    .order('created_at', { ascending: false })
+  try {
+    const res = await fetch(`/.netlify/functions/get-ideas?username=${encodeURIComponent(currentUser)}`)
+    const data = await res.json()
+    if (!res.ok) { setErr('list', 'Load failed: ' + (data.error || res.status)); setLoading(false); return }
+    ideas = data || []
+  } catch (e) {
+    setErr('list', 'Load failed: ' + e.message); setLoading(false); return
+  }
   setLoading(false)
-  if (error) { setErr('list', 'Load failed: ' + error.message); return }
-  ideas = data || []
   renderList(); renderMatrix()
 }
 
 async function insertIdea(payload) {
-  const { error } = await db.from('ideas').insert([payload])
-  if (error) { setErr('form', 'Could not add: ' + error.message); return false }
-  return true
+  try {
+    const res = await fetch('/.netlify/functions/add-idea', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      setErr('form', 'Could not add: ' + (data.error || res.status)); return false
+    }
+    return true
+  } catch (e) {
+    setErr('form', 'Could not add: ' + e.message); return false
+  }
 }
 
 async function deleteIdea(id) {
-  const { error } = await db.from('ideas').delete().eq('id', id)
-  if (error) { setErr('list', 'Delete failed: ' + error.message); return false }
-  return true
+  try {
+    const res = await fetch('/.netlify/functions/delete-idea', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, username: currentUser }),
+    })
+    if (!res.ok) {
+      const data = await res.json()
+      setErr('list', 'Delete failed: ' + (data.error || res.status)); return false
+    }
+    return true
+  } catch (e) {
+    setErr('list', 'Delete failed: ' + e.message); return false
+  }
 }
 
 // ── ADD FORM ───────────────────────────────────────────────────
