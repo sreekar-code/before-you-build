@@ -7,7 +7,8 @@ Evaluate ideas before you build them. Plot ideas on an effort × impact matrix t
 - Enter your name to get a personal idea space
 - Add ideas with effort (0–5) and impact (0–5) scores
 - Ideas are placed on a canvas split into four quadrants: **Do It**, **Plan It**, **Maybe**, **Skip**
-- Hover over dots to see idea details
+- Hover over dots (or tap on mobile) to see idea details
+- Fully responsive — works on mobile with tab navigation between the form and the matrix
 - Export your ideas as JSON
 
 ## Architecture

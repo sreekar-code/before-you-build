@@ -28,6 +28,9 @@ netlify.toml                — points Netlify to functions directory
 - **No npm / no bundler.** Do not introduce a package.json, build step, or any dependencies. Keep it file-based.
 - **Optimistic UI.** Add and delete update local state and localStorage immediately; server calls happen in background.
 - **localStorage cache.** Ideas are cached per username in localStorage and shown instantly on load, then refreshed from server.
+- **Mobile layout.** On screens ≤700px, the app switches to a tab-based layout (`#mobile-nav`): one tab for the add/list sidebar, one for the matrix. The `panel-hidden` class (only active inside the media query) toggles visibility. `#main` gets `panel-hidden` on init so only the sidebar shows first.
+- **Responsive canvas.** `PAD` (canvas padding) uses JS getters so it returns tighter values when the canvas width is <420px. Dot labels are hidden on narrow canvases — tap a dot to see its details via tooltip.
+- **Touch on canvas.** `touchstart` finds the nearest dot within a 16px radius and shows the tooltip above the touch point. Tapping outside the canvas dismisses it.
 
 ## Local dev
 
@@ -43,3 +46,5 @@ Requires a `.env` file with `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
 - Do not commit `.env` or hardcode keys anywhere
 - Do not introduce npm, a bundler, or a framework
 - Do not add a permissive RLS policy
+- Do not convert `PAD` back to a plain object — it must stay as a getter-based object so canvas padding is responsive
+- Do not remove the `main.classList.add('panel-hidden')` init line in the mobile tabs IIFE — without it both panels show on load and the form gets cut off
